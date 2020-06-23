@@ -1,5 +1,3 @@
-'use strict';
-
 /*
   Created by David Walsh - https://davidwalsh.name
   Happy Streaming!
@@ -35,8 +33,8 @@ const keyEndpoint = {
   E: 'Enter',
 
   // Other
-  r: 'InstantReplay',
-  b: 'InfoBackspace'
+  I: 'InstantReplay',
+  A: 'Info' // asterisk sign
 };
 const xmlToObject = xml => {
     return JSON.parse(xml2json.toJson(xml));
@@ -47,12 +45,19 @@ process.stdin.setRawMode(true);
 
 console.log('Looking for the (first) Roku...');
 
-// Find the Roku
-// TODO:  Allow for selection of multiple Rokus; current assuming only one
+// It looks like Roku.find is necessary even if we know the IP of the device we want to use
 Roku.find((err, devices) => {
   if(err) {
     console.log('`roku.find` error: ', err);
     process.exit();
+  }
+
+  if (process && process.env && process.env.npm_config_argv) {
+    const args = JSON.parse(process.env.npm_config_argv);
+    const rokuIp = args.remain.shift() || '';
+    if (rokuIp) {
+      devices = [`http://${rokuIp}:8060`];
+    }
   }
 
   if(!devices.length) {
@@ -62,7 +67,7 @@ Roku.find((err, devices) => {
 
   address = devices[0];
   Roku.getDevice(address, (err, deviceDetail) => {
-    console.log('Connected to Device: ', xmlToObject(deviceDetail).root.device.friendlyName, ' (', devices[0], ')');
+    console.log('Connected to Device: ', xmlToObject(deviceDetail).root.device.friendlyName, ' (', address, ')');
     console.log('Press keys to navigate the Roku and select content!');
   });
 });
@@ -80,7 +85,7 @@ process.stdin.on('keypress', (str, key) => {
   }
 
   // Handle commands
-  let endpoint = keyEndpoint[key.name] || keyEndpoint[key.sequence] || 'Lit_' + key.name;
+  let endpoint = keyEndpoint[key.name] || keyEndpoint[key.sequence] || 'Lit_' + (key.name ? key.name : encodeURIComponent(key.sequence));
 
   // Ignore undefined keypresses (no name or sequence)
   if(endpoint === 'Lit_undefined') {

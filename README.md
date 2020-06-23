@@ -13,7 +13,13 @@ npm install roku-remote
 2.  Open a command line application (Terminal, iTerm, etc.) and start the script:
 
 ```bash
-node remote
+npm start
+```
+
+If, for some reason your Roku device is not found, you can type the exact IP, e.g.:
+
+```bash
+npm start -- 192.168.2.16
 ```
 
 3.  The script will listen for your keypress events to navigate around the Roku as well as open apps, play content, search, and more!  A full key mapping can be found below.
@@ -46,6 +52,9 @@ The following represents the current key mapping:
 
   // Other
   r: 'InstantReplay',
-  b: 'InfoBackspace'
+  b: 'InfoBackspace',
+
+  I: 'InstantReplay',
+  A: 'Info' // asterisk sign
 };
 ```
